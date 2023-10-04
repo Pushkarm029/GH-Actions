@@ -1,34 +1,43 @@
-name: Check Assignee's Issues
+name: Check for assigned issues
 
 on:
-  issue_comment:
-    types:
-      - created
+  pull_request_comment:
 
 jobs:
-  check-assignee-issues:
+  check_assigned_issues:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
-      - name: Check if the author has issues assigned
-        id: check-assignee
+      - name: Get the author of the comment
+        id: get_author
         run: |
-          COMMENT_AUTHOR=$(jq -r .comment.user.login "$GITHUB_EVENT_PATH")
-          ISSUES=$(curl -s "https://api.github.com/search/issues?q=is:open+is:issue+assignee:$COMMENT_AUTHOR" | jq .total_count)
-          echo "::set-output name=has_issues::$(test $ISSUES -gt 0 && echo true || echo false)"
+          echo "::set-output name=author::$(gh pr comment show --number ${{ github.event.number }} --output=raw | jq -r '.user.login')"
 
-      - name: Update comment if author has issues
-        if: steps.check-assignee.outputs.has_issues == 'true'
-        run: |
-          COMMENT_ID=$(jq -r .comment.id "$GITHUB_EVENT_PATH")
-          ISSUE_URL="https://github.com/$GITHUB_REPOSITORY/issues?q=is%3Aopen+is%3Aissue+assignee%3A$COMMENT_AUTHOR"
-          MESSAGE="The author has issues assigned to them. [View issues]($ISSUE_URL)"
-          echo "Updating comment with message: $MESSAGE"
-          curl -X PATCH \
-            -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-            -H "Accept: application/vnd.github.v3+json" \
-            "https://api.github.com/repos/$GITHUB_REPOSITORY/issues/comments/$COMMENT_ID" \
-            -d "{\"body\":\"$MESSAGE\"}"
+      - name: Check if the author has any assigned issues
+        id: check_assigned_issues
+        uses: actions/github-script@v5
+        with:
+          script: |
+            const author = process.env.author;
+            const issues = await github.issues.listAssigned({ assignee: author });
+            if (issues.data.length > 0) {
+              return true;
+            } else {
+              return false;
+            }
+
+      - name: Update the comment with meta information
+        if: ${{ steps.check_assigned_issues.outputs.result }}
+        uses: actions/github-script@v5
+        with:
+          script: |
+            const author = process.env.author;
+            const issues = await github.issues.listAssigned({ assignee: author });
+            const issueUrl = issues.data[0].html_url;
+
+            await github.issues.updateComment({
+              comment_id: ${{ github.event.comment_id }},
+              body: `${author}, you have ${issues.data.length} issue(s) assigned to you. Please see [the issue](${issueUrl}) to learn more.`
+            });
