@@ -1,0 +1,34 @@
+name: Check Assignee's Issues
+
+on:
+  issue_comment:
+    types:
+      - created
+
+jobs:
+  check-assignee-issues:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Check if the author has issues assigned
+        id: check-assignee
+        run: |
+          COMMENT_AUTHOR=$(jq -r .comment.user.login "$GITHUB_EVENT_PATH")
+          ISSUES=$(curl -s "https://api.github.com/search/issues?q=is:open+is:issue+assignee:$COMMENT_AUTHOR" | jq .total_count)
+          echo "::set-output name=has_issues::$(test $ISSUES -gt 0 && echo true || echo false)"
+
+      - name: Update comment if author has issues
+        if: steps.check-assignee.outputs.has_issues == 'true'
+        run: |
+          COMMENT_ID=$(jq -r .comment.id "$GITHUB_EVENT_PATH")
+          ISSUE_URL="https://github.com/$GITHUB_REPOSITORY/issues?q=is%3Aopen+is%3Aissue+assignee%3A$COMMENT_AUTHOR"
+          MESSAGE="The author has issues assigned to them. [View issues]($ISSUE_URL)"
+          echo "Updating comment with message: $MESSAGE"
+          curl -X PATCH \
+            -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            -H "Accept: application/vnd.github.v3+json" \
+            "https://api.github.com/repos/$GITHUB_REPOSITORY/issues/comments/$COMMENT_ID" \
+            -d "{\"body\":\"$MESSAGE\"}"
