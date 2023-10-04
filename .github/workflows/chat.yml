@@ -28,7 +28,8 @@ jobs:
             ISSUE_URL="https://github.com/$GITHUB_REPOSITORY/issues?q=is%3Aopen+is%3Aissue+assignee%3A$COMMENT_AUTHOR"
             MESSAGE="The author has issues assigned to them. [View issues]($ISSUE_URL)"
             echo "Updating comment with message: $MESSAGE"
-            echo "https://api.github.com/repos/$GITHUB_REPOSITORY_OWNER/$GITHUB_REPOSITORY/issues/comments/$COMMENT_ID"
+            echo "$GITHUB_REPOSITORY_OWNER"
+            echo "$GITHUB_REPOSITORY"
             curl -L \
               -X PATCH \
               -H "Accept: application/vnd.github+json" \
