@@ -20,3 +20,14 @@ jobs:
           ISSUES=$(curl -s "https://api.github.com/search/issues?q=is:open+is:issue+assignee:$COMMENT_AUTHOR" | jq .total_count)
           echo "HELLO $COMMENT_AUTHOR"
           echo "$ISSUES"
+          echo "has_issues=$(test $ISSUES -gt 0 && echo true || echo false)" >> $GITHUB_OUTPUT
+          
+      - name: Update comment if author has issues
+        if: steps.check-assignee.outputs.has_issues == 'true'
+        run: |
+            COMMENT_ID=$(jq -r .comment.id "$GITHUB_EVENT_PATH")
+            echo "COMMENT_ID=$COMMENT_ID"
+            ISSUE_URL="https://github.com/$GITHUB_REPOSITORY/issues?q=is%3Aopen+is%3Aissue+assignee%3A$COMMENT_AUTHOR"
+            echo "ISSUE_URL=$ISSUE_URL"
+            MESSAGE="The author has issues assigned to them. [View issues]($ISSUE_URL)"
+            echo "MESSAGE=$MESSAGE"
