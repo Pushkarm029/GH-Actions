@@ -7,9 +7,12 @@ on:
 jobs:
   stale:
     runs-on: ubuntu-latest
+    permissions:
+        issues: write
     steps:
     - uses: actions/stale@v5
       with:
+        repo-token: ${{ secrets.GITHUB_TOKEN }}
         days-before-issue-stale: 4
         stale-issue-label: 'stale'
         stale-issue-message: 'This issue has been automatically marked as stale because it has not had recent activity. Thank you for your contributions.'
