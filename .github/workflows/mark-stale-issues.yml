@@ -1,0 +1,50 @@
+name: Mark Stale Issues
+
+on:
+  schedule:
+    - cron: "*/2 * * * *"
+
+jobs:
+  mark-stale:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check for Stale Issues
+        id: stale-issues
+        uses: actions/github-script@v5
+        with:
+          script: |
+            const minutesSinceUpdate = 2; // Change this to 2 for a 2-minute interval
+            const staleLabel = 'stale';
+
+            const { data: issues } = await github.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: staleLabel,
+            });
+
+            for (const issue of issues) {
+              const lastUpdated = new Date(issue.updated_at);
+              const currentDate = new Date();
+              const minutesDifference = Math.floor(
+                (currentDate - lastUpdated) / (1000 * 60)
+              );
+
+              if (minutesDifference >= minutesSinceUpdate) {
+                await github.issues.removeLabel({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: issue.number,
+                  name: staleLabel,
+                });
+                await github.issues.addLabels({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: issue.number,
+                  labels: [staleLabel],
+                });
+              }
+            }
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
