@@ -1,0 +1,15 @@
+name: Mark stale issues
+
+on:
+  schedule:
+  - cron: '* * * * *'
+
+jobs:
+  stale:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/stale@v5
+      with:
+        days-before-issue-stale: 4
+        stale-issue-label: 'stale'
+        stale-issue-message: 'This issue has been automatically marked as stale because it has not had recent activity. Thank you for your contributions.'
