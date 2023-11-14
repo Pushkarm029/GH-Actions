@@ -40,3 +40,18 @@ jobs:
           echo "Vulnerabilities found, creating issue"
           echo "results=found" >> $GITHUB_OUTPUT
         fi
+    - name: Get latest tag
+      id: get-latest-tag
+      shell: bash
+      run: |
+        latest_tag=$(curl -s https://api.github.com/repos/${{ env.IMAGE_NAME }}/tags | jq -r '.[0].name')
+        echo "Latest tag: $latest_tag"
+
+    - name: Generate tag list
+      id: generate-tag-list
+      shell: bash
+      run: |
+        major=$(echo ${{ steps.get-latest-tag.outputs.latest_tag }} | cut -d '.' -f 1)
+        minor=$(echo ${{ steps.get-latest-tag.outputs.latest_tag }} | cut -d '.' -f 2)
+        tag_list=("$major.$minor" "$major.$((minor-1))" "$major.$((minor-2))")
+        echo "Tags to scan: ${tag_list[@]}"
