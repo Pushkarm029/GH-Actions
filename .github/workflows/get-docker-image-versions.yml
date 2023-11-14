@@ -46,12 +46,8 @@ jobs:
       shell: bash
       run: |
         latest_tag=$(curl -s https://api.github.com/repos/${{ env.IMAGE_NAME }}/tags | jq -r '.[0].name')
-        latest_-1_tag=$(curl -s https://api.github.com/repos/${{ env.IMAGE_NAME }}/tags | jq -r '.[1].name')
-        latest_-2_tag=$(curl -s https://api.github.com/repos/${{ env.IMAGE_NAME }}/tags | jq -r '.[2].name')
 
         echo "Latest tag: $latest_tag"
-        echo "Latest-1 tag: $latest_-1_tag"
-        echo "Latest-2 tag: $latest_-2_tag"
 
 
     - name: Generate tag list
