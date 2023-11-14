@@ -24,9 +24,11 @@ jobs:
         latest_tag=$(curl -s https://api.github.com/repos/${{ env.IMAGE_NAME }}/tags | jq -r '.[0].name')
         latest1_tag=$(curl -s https://api.github.com/repos/${{ env.IMAGE_NAME }}/tags | jq -r '.[1].name')
         latest2_tag=$(curl -s https://api.github.com/repos/${{ env.IMAGE_NAME }}/tags | jq -r '.[2].name')
+        
+        echo "Latest tag: $latest_tag One tag: $latest1_tag Two tag: $latest2_tag All tags: $all_tag"
         echo "latest_tag=$latest_tag" >> $GITHUB_OUTPUT
-        echo "latest1_tag=$one_tag" >> $GITHUB_OUTPUT
-        echo "latest2_tag=$two_tag" >> $GITHUB_OUTPUT
+        echo "latest1_tag=$latest1_tag" >> $GITHUB_OUTPUT
+        echo "latest2_tag=$latest2_tag" >> $GITHUB_OUTPUT
 
     - name: Scan for vulnerabilities in latest image
       uses: aquasecurity/trivy-action@f78e9ecf42a1271402d4f484518b9313235990e1 # v0.8.0 (Trivy v0.34.0)
