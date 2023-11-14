@@ -31,7 +31,6 @@ jobs:
         ignore-unfixed: false
         severity: HIGH,CRITICAL
         output: scan.json
-
     - name: Parse scan results
       id: parse-results
       continue-on-error: true
