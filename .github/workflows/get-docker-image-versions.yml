@@ -51,16 +51,6 @@ jobs:
         latest_tag=$(curl -s https://api.github.com/repos/${{ env.IMAGE_NAME }}/tags | jq -r '.[0].name')
         one_tag=$(curl -s https://api.github.com/repos/${{ env.IMAGE_NAME }}/tags | jq -r '.[1].name')
         two_tag=$(curl -s https://api.github.com/repos/${{ env.IMAGE_NAME }}/tags | jq -r '.[2].name')
-        all_tag=$(curl -s https://${{env.REGISTRY}}/${{ env.IMAGE_NAME }}/tags | jq -r '.[].name')
+        all_tag=$(curl -s https://api.github.com/repos/${{ env.IMAGE_NAME }}/tags | jq -r '.[] | select(.name | starts_with("release")))
         
         echo "Latest tag: $latest_tag One tag: $one_tag Two tag: $two_tag All tags: $all_tag"
-
-
-    - name: Generate tag list
-      id: generate-tag-list
-      shell: bash
-      run: |
-        major=$(echo ${{ steps.get-latest-tag.outputs.latest_tag }} | cut -d '.' -f 1)
-        minor=$(echo ${{ steps.get-latest-tag.outputs.latest_tag }} | cut -d '.' -f 2)
-        tag_list=("$major.$minor" "$major.$((minor-1))" "$major.$((minor-2))")
-        echo "Tags to scan: ${tag_list[@]}"
