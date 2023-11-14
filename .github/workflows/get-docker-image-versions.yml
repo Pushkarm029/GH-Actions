@@ -51,6 +51,6 @@ jobs:
         latest_tag=$(curl -s https://api.github.com/repos/${{ env.IMAGE_NAME }}/tags | jq -r '.[0].name')
         one_tag=$(curl -s https://api.github.com/repos/${{ env.IMAGE_NAME }}/tags | jq -r '.[1].name')
         two_tag=$(curl -s https://api.github.com/repos/${{ env.IMAGE_NAME }}/tags | jq -r '.[2].name')
-        all_tag=$(curl -s https://api.github.com/repos/${{ env.IMAGE_NAME }}/tags | jq -r '.[] | select(.name | starts_with("release")))
+        all_tags=$(curl -s "https://api.github.com/repos/${{ env.IMAGE_NAME }}/tags" | jq -r '.[] | select(.name | startswith("release")) | .name')
         
         echo "Latest tag: $latest_tag One tag: $one_tag Two tag: $two_tag All tags: $all_tag"
