@@ -1,4 +1,4 @@
-name: report-on-vulnerabilities
+name: check-latest-tag
 
 permissions: {}
 
