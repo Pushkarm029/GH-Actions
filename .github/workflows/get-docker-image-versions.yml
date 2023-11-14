@@ -19,6 +19,10 @@ jobs:
     outputs:
       results: ${{ steps.parse-results.outputs.results }}
     steps:
+    - name: Get Versions
+      run: |
+        
+
     - name: Scan for vulnerabilities
       uses: aquasecurity/trivy-action@b77b85c0254bba6789e787844f0585cde1e56320 # v0.8.0 (Trivy v0.34.0)
       with: 
@@ -48,8 +52,8 @@ jobs:
         latest_tag=$(curl -s https://api.github.com/repos/${{ env.IMAGE_NAME }}/tags | jq -r '.[0].name')
         one_tag=$(curl -s https://api.github.com/repos/${{ env.IMAGE_NAME }}/tags | jq -r '.[1].name')
         two_tag=$(curl -s https://api.github.com/repos/${{ env.IMAGE_NAME }}/tags | jq -r '.[2].name')
-        all_tag=$(curl -s https://api.github.com/repos/${{ env.IMAGE_NAME }}/tags | jq -r '.')
-
+        all_tag=$(curl -s https://${{env.REGISTRY}}/${{ env.IMAGE_NAME }}/tags | jq -r '.[].name')
+        
         echo "Latest tag: $latest_tag One tag: $one_tag Two tag: $two_tag All tags: $all_tag"
 
 
