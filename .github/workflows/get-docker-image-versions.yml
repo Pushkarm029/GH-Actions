@@ -11,7 +11,7 @@ on:
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: kyverno/kyverno
-  TAG : release-1.10
+  TAG : release-1.11
 
 jobs:
   scan:
