@@ -44,7 +44,7 @@ jobs:
       id: get-latest-tag
       shell: bash
       run: |
-        latest_tag=$(curl -s https://api.github.com/repos/${{ env.IMAGE_NAME }}/tags | jq -r '.[0].name')
+        latest_tag=$(curl -s https://api.github.com/repos/${{ env.IMAGE_NAME }}/tags | jq -r '.')
         echo "Latest tag: $latest_tag"
 
     - name: Generate tag list
