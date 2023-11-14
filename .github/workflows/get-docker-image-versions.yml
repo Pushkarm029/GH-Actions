@@ -11,6 +11,7 @@ on:
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: kyverno/kyverno
+  TAG : v1.11.0
 
 jobs:
   scan:
@@ -21,7 +22,7 @@ jobs:
     - name: Scan for vulnerabilities
       uses: aquasecurity/trivy-action@b77b85c0254bba6789e787844f0585cde1e56320 # v0.8.0 (Trivy v0.34.0)
       with: 
-        image-ref: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+        image-ref: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.TAG }}
         format: json
         ignore-unfixed: false
         severity: HIGH,CRITICAL
