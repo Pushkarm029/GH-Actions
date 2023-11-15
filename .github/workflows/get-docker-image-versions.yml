@@ -24,6 +24,5 @@ jobs:
         one_tag=$(curl -s https://api.github.com/repos/${{ env.IMAGE_NAME }}/tags | jq -r '.[1].name')
         two_tag=$(curl -s https://api.github.com/repos/${{ env.IMAGE_NAME }}/tags | jq -r '.[2].name')
         BRANCH_NAME=$(echo ${GITHUB_REF#refs/heads/} | tr / -)
-        all_branches=$(curl -s https://api.github.com/repos/${{ env.IMAGE_NAME }}/branches | jq -r '.[].name | select(startswith("release-"))' | sort -V | head -n 3)
-
+        all_branches=$(curl -s https://api.github.com/repos/${{ env.IMAGE_NAME }}/branches | jq -r '.[].name | select(startswith("release-"))' | sort -rV | head -n 2)
         echo "Latest tag: $latest_tag One tag: $one_tag Two tag: $two_tag All branches: $all_branches Branch name: $BRANCH_NAME"
