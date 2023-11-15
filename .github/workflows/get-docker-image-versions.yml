@@ -3,10 +3,10 @@ name: check-latest-tag
 permissions: {}
 
 on:
-    push:
-        branches: [ "main" ]
-    pull_request:
-        branches: [ "main" ]
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
 
 env:
   REGISTRY: ghcr.io
@@ -24,6 +24,6 @@ jobs:
         latest_tag=$(curl -s https://api.github.com/repos/${{ env.IMAGE_NAME }}/tags | jq -r '.[0].name')
         one_tag=$(curl -s https://api.github.com/repos/${{ env.IMAGE_NAME }}/tags | jq -r '.[1].name')
         two_tag=$(curl -s https://api.github.com/repos/${{ env.IMAGE_NAME }}/tags | jq -r '.[2].name')
-        all_tags=$(curl -s https://api.github.com/repos/${{ env.IMAGE_NAME }}/tags | jq -r '.[] | select(.name | startswith("release"))')
+        BRANCH_NAME=$(echo ${GITHUB_REF#refs/heads/} | tr / -)        
         
-        echo "Latest tag: $latest_tag One tag: $one_tag Two tag: $two_tag All tags: $all_tag"
+        echo "Latest tag: $latest_tag One tag: $one_tag Two tag: $two_tag Branch name: $BRANCH_NAME"
