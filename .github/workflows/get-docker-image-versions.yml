@@ -25,4 +25,7 @@ jobs:
         two_tag=$(curl -s https://api.github.com/repos/${{ env.IMAGE_NAME }}/tags | jq -r '.[2].name')
         BRANCH_NAME=$(echo ${GITHUB_REF#refs/heads/} | tr / -)
         all_branches=$(curl -s https://api.github.com/repos/${{ env.IMAGE_NAME }}/branches | jq -r '.[].name | select(startswith("release-"))' | sort -rV | head -n 2)
-        echo "Latest tag: $latest_tag One tag: $one_tag Two tag: $two_tag All branches: $all_branches Branch name: $BRANCH_NAME"
+        # Add tags for the top two branches
+        tag1=$(echo "$all_branches" | sed -n 1p)
+        tag2=$(echo "$all_branches" | sed -n 2p)
+        echo "Latest tag: $latest_tag One tag: $one_tag Two tag: $two_tag tag1: $tag1 tag2: $tag2 Branch name: $BRANCH_NAME"
