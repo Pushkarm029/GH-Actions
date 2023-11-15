@@ -1,11 +1,9 @@
-name: check-latest-tag
+name: report-on-vulnerabilities
 
 permissions: {}
 
 on:
   push:
-    branches: [ "main" ]
-  pull_request:
     branches: [ "main" ]
 
 env:
@@ -15,17 +13,71 @@ env:
 jobs:
   scan:
     runs-on: ubuntu-latest
-    steps:
-    - name: Get latest tag and branch names
-      id: get-latest-tag
+    outputs:
+      results: ${{ steps.parse-results.outputs.results }}
+    steps:    
+    - name: Get Branches Name
+      id: get-branches
       shell: bash
       run: |
-        latest_tag=$(curl -s https://api.github.com/repos/${{ env.IMAGE_NAME }}/tags | jq -r '.[0].name')
-        one_tag=$(curl -s https://api.github.com/repos/${{ env.IMAGE_NAME }}/tags | jq -r '.[1].name')
-        two_tag=$(curl -s https://api.github.com/repos/${{ env.IMAGE_NAME }}/tags | jq -r '.[2].name')
-        BRANCH_NAME=$(echo ${GITHUB_REF#refs/heads/} | tr / -)
         all_branches=$(curl -s https://api.github.com/repos/${{ env.IMAGE_NAME }}/branches | jq -r '.[].name | select(startswith("release-"))' | sort -rV | head -n 2)
-        # Add tags for the top two branches
-        tag1=$(echo "$all_branches" | sed -n 1p)
-        tag2=$(echo "$all_branches" | sed -n 2p)
-        echo "Latest tag: $latest_tag One tag: $one_tag Two tag: $two_tag tag1: $tag1 tag2: $tag2 Branch name: $BRANCH_NAME"
+        releasebranch1=$(echo "$all_branches" | sed -n 1p)
+        releasebranch2=$(echo "$all_branches" | sed -n 2p)
+
+        echo "releasebranch1=$releasebranch1" >> $GITHUB_OUTPUT
+        echo "releasebranch2=$releasebranch2" >> $GITHUB_OUTPUT
+    
+    - name: Scan for vulnerabilities in latest image
+      uses: aquasecurity/trivy-action@f78e9ecf42a1271402d4f484518b9313235990e1 # v0.8.0 (Trivy v0.34.0)
+      with: 
+        image-ref: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+        format: json
+        ignore-unfixed: false
+        severity: HIGH,CRITICAL
+        output: scan1.json
+
+    - name: Scan for vulnerabilities in release-branch-1 image
+      uses: aquasecurity/trivy-action@f78e9ecf42a1271402d4f484518b9313235990e1 # v0.8.0 (Trivy v0.34.0)
+      with: 
+        image-ref: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.get-branches.outputs.releasebranch1 }}
+        format: json
+        ignore-unfixed: false
+        severity: HIGH,CRITICAL
+        output: scan2.json
+
+    - name: Scan for vulnerabilities in release-branch-2 image
+      uses: aquasecurity/trivy-action@f78e9ecf42a1271402d4f484518b9313235990e1 # v0.8.0 (Trivy v0.34.0)
+      with: 
+        image-ref: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.get-branches.outputs.releasebranch2 }}
+        format: json
+        ignore-unfixed: false
+        severity: HIGH,CRITICAL
+        output: scan3.json
+
+    - name: Merge scan results
+      id: merge-results
+      run: |
+        jq -s add scan1.json scan2.json scan3.json > scan.json
+        cat scan.json
+
+    - name: Parse scan results
+      id: parse-results
+      continue-on-error: true
+      run: |
+        VULNS=$(cat scan.json | jq '.Results[] | select(.Target=="ko-app/kyverno") | length')
+        if [[ $VULNS -eq 0 ]]
+        then
+          echo "No vulnerabilities found, halting"
+          echo "results=nothing" >> $GITHUB_OUTPUT
+        else
+          echo "Vulnerabilities found, creating issue"
+          echo "results=found" >> $GITHUB_OUTPUT
+        fi
+
+    - name: Upload vulnerability scan report
+      uses: actions/upload-artifact@a8a3f3ad30e3422c9c7b888a15615d19a852ae32 # v3.1.3
+      if: steps.parse-results.outputs.results == 'found'
+      with:
+        name: scan.json
+        path: scan.json
+        if-no-files-found: error
