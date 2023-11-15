@@ -11,19 +11,19 @@ on:
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: kyverno/kyverno
-  TAG : release-1.11
 
 jobs:
   scan:
     runs-on: ubuntu-latest
     steps:
-    - name: Get latest tag
+    - name: Get latest tag and branch names
       id: get-latest-tag
       shell: bash
       run: |
         latest_tag=$(curl -s https://api.github.com/repos/${{ env.IMAGE_NAME }}/tags | jq -r '.[0].name')
         one_tag=$(curl -s https://api.github.com/repos/${{ env.IMAGE_NAME }}/tags | jq -r '.[1].name')
         two_tag=$(curl -s https://api.github.com/repos/${{ env.IMAGE_NAME }}/tags | jq -r '.[2].name')
-        BRANCH_NAME=$(echo ${GITHUB_REF#refs/heads/} | tr / -)        
-        
-        echo "Latest tag: $latest_tag One tag: $one_tag Two tag: $two_tag Branch name: $BRANCH_NAME"
+        BRANCH_NAME=$(echo ${GITHUB_REF#refs/heads/} | tr / -)
+        all_branches=$(curl -s https://api.github.com/repos/${{ env.IMAGE_NAME }}/branches | jq -r '.[].name')
+
+        echo "Latest tag: $latest_tag One tag: $one_tag Two tag: $two_tag All branches: $all_branches Branch name: $BRANCH_NAME"
