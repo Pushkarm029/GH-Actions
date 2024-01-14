@@ -4,7 +4,7 @@ on:
   schedule:
     - cron: '0 0 * * *'  # Runs daily at midnight
   pull_request:
-    types: [opened]
+    types: [opened] #remove later
 
 jobs:
   stale:
