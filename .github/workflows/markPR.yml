@@ -4,7 +4,7 @@ on:
   schedule:
     - cron: '0 0 * * *'
   pull_request:
-    types: [opened]
+    types: [opened] #not working
 jobs:
   stale:
     runs-on: ubuntu-latest
