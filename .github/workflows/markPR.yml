@@ -4,7 +4,7 @@ on:
   schedule:
     - cron: '0 0 * * *'  # Runs daily at midnight
   pull_request:
-    types: [opened]
+    types: [opened] #remove later
 
 jobs:
   stale:
@@ -13,6 +13,6 @@ jobs:
       - uses: actions/stale@v9
         with:
           days-before-stale: 0.01  # Mark issues as stale if they have had no activity for 1 minute (for testing purposes)
-          days-before-close: 0  # Don't close stale PRs automatically
+          days-before-close: 50  # Don't close stale PRs automatically
           stale-pr-message: 'This pull request has been automatically marked as stale because it has not had recent activity. Please comment or merge this request if it is still relevant.'
           exempt-issue-labels: 'keep'  # Optional: Exempt PRs with the "keep" label
