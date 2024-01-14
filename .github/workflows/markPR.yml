@@ -2,10 +2,9 @@ name: Mark stale PRs
 
 on:
   schedule:
-    - cron: '0 0 * * *'  # Runs daily at midnight
+    - cron: '0 0 * * *'
   pull_request:
-    types: [opened] #remove later
-
+    types: [opened]
 jobs:
   stale:
     runs-on: ubuntu-latest
