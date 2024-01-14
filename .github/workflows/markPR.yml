@@ -10,7 +10,7 @@ jobs:
   stale:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/stale@v6
+      - uses: actions/stale@v9
         with:
           days-before-stale: 0.01  # Mark issues as stale if they have had no activity for 1 minute (for testing purposes)
           days-before-close: 0  # Don't close stale PRs automatically
